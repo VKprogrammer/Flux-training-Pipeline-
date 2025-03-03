@@ -1,0 +1,52 @@
+config:
+  name: S-1NIKE
+  process:
+  - datasets:
+    - cache_latents_to_disk: true
+      caption_dropout_rate: 0.08
+      caption_ext: txt
+      folder_path: training_data
+      resolution:
+      - 1024
+      shuffle_tokens: true
+    device: cuda:0
+    model:
+      assistant_lora_path: ostris/FLUX.1-schnell-training-adapter
+      is_flux: true
+      name_or_path: black-forest-labs/FLUX.1-schnell
+      quantize: true 
+    network:
+      linear: 64
+      linear_alpha: 64
+      type: lora
+    performance_log_every: 1000
+    save:
+      dtype: float16
+      max_step_saves_to_keep: 3
+      push_to_hub: false
+      save_every: 200
+    train:
+      batch_size: 4
+      dtype: bf16
+      ema_config:
+        ema_decay: 0.999
+        use_ema: true
+      gradient_accumulation_steps: 2
+      gradient_checkpointing: true
+      lr: 2e-5
+      lr_scheduler: cosine
+      noise_scheduler: flowmatch
+      optimizer: adamw8bit
+      steps: 1500
+      train_text_encoder: false
+      train_unet: true
+      weight_decay: 0.02
+    training_folder: output/S-1NIKE
+    trigger_word: S-1NIKE
+    type: sd_trainer
+  training_folder: output/S-1NIKE
+  trigger_word: S-1NIKE
+job: extension
+meta:
+  name: S-1NIKE
+  version: '1.
