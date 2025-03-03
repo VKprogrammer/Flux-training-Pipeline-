@@ -20,7 +20,7 @@ app = FastAPI(title="Flux Image Generation API")
 s3_client = boto3.client('s3')
 
 # Configure Google Gemini
-genai.configure(api_key='AIzaSyAJsRbTRUcNAlYR2SWrR0qp0aX1j4M2TO8')
+genai.configure(api_key='key')
 model = genai.GenerativeModel('gemini-1.5-pro')
 
 class GenerationRequest(BaseModel):
