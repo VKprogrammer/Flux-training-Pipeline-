@@ -1,0 +1,62 @@
+config:
+  name: Handbag2
+  process:
+  - datasets:
+    - cache_latents_to_disk: true
+      caption_dropout_rate: 0.05
+      caption_ext: txt
+      folder_path: training_data
+      resolution:
+      - 1024
+      shuffle_tokens: true
+    device: cuda:0
+    model:
+      assistant_lora_path: ostris/FLUX.1-schnell-training-adapter
+      is_flux: true
+      name_or_path: black-forest-labs/FLUX.1-schnell
+      quantize: true
+    network:
+      linear: 16
+      linear_alpha: 16
+      type: lora
+    performance_log_every: 1000
+    sample:
+      guidance_scale: 1
+      height: 1024
+      neg: ''
+      prompts:
+      - A hyper-realistic, high-resolution fashion photograph featuring a stylish, confident woman in a chic urban setting. The woman, dressed in modern,                elegant attire, is gracefully holding the [trigger] handbag close to her body. Natural sunlight and soft bokeh in the background create a warm, vibrant          atmosphere, emphasizing the bags luxurious texture, refined detailing, and unique design. The scene captures a candid, yet sophisticated moment with             realistic shadows, subtle reflections, and a dynamic composition that highlights both the model’s personality and the handbag’s premium quality.
+      - A vivid, ultra-detailed image of the [trigger] handbag elegantly positioned on a sun-drenched sandy beach. The setting includes a crystal-clear blue             sky, gently lapping ocean waves, and hints of tropical greenery in the background, evoking a relaxed, yet upscale vacation vibe. The handbag is artfully         staged on a textured surface with soft natural lighting that enhances its fine craftsmanship and distinctive design features. Emphasize the interplay of         light and shadow, warm golden hues, and a balanced composition that seamlessly merges the luxury product with a serene, coastal backdrop.
+      - A clean, professional studio photograph showcasing the [trigger] handbag against a pristine white backdrop. The image features soft, even high-key               lighting that meticulously highlights every detail of the bag—from its texture and stitching to its refined silhouette and hardware. The composition is          minimalist and modern, drawing full attention to the handbag as the centerpiece. Include subtle shadows and reflections to enhance the three-                    dimensional appearance, ensuring the product exudes a sense of premium quality and timeless elegance ideal for e-commerce and marketing campaigns.
+      sample_every: 200
+      sample_steps: 4
+      sampler: flowmatch
+      seed: 42
+      walk_seed: true
+      width: 1024
+    save:
+      dtype: float16
+      max_step_saves_to_keep: 4
+      push_to_hub: false
+      save_every: 200
+    train:
+      batch_size: 1
+      dtype: bf16
+      ema_config:
+        ema_decay: 0.99
+        use_ema: true
+      gradient_accumulation_steps: 1
+      gradient_checkpointing: true
+      lr: 1e-4
+      noise_scheduler: flowmatch
+      optimizer: adamw8bit
+      steps: 2000
+      train_text_encoder: false
+      train_unet: true
+    training_folder: output/Handbag_fashion
+    trigger_word: H-1
+    type: sd_trainer
+job: extension
+meta:
+  name: '[name]'
+  version: '1.0'
