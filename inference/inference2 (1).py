@@ -13,12 +13,24 @@ from functools import lru_cache
 import logging
 import time
 import uuid
+import google.generativeai as genai
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 s3_client = boto3.client('s3')
+
+genai.configure(api_key='your_key')
+model = genai.GenerativeModel('gemini-1.5-pro')
+
+
+def enhance_prompt(prompt: str) -> str:
+    """Enhance the prompt using Google Gemini"""
+    response = model.generate_content(
+        f"Expand and refine the user prompt into a highly detailed, cinematic description suitable for an image generation model. The final prompt must vividly describe the scene, background, lighting, atmosphere, and key details to guide the model effectively. Ensure that the provided trigger word is naturally incorporated based on its category. If a focal length is given, adjust the perspective accordingly. The final output must remain within 77 tokens while being visually compelling and well-structured. Avoid redundancy, and optimize for clarity and realism: {prompt}"
+    )
+    return response.text
 
 # Define default LoRA configuration
 DEFAULT_LORA_URL = "s3://sagemaker-us-east-1-274412008471/trained_models/Default-Lora/Realism Lora.safetensors"
@@ -68,7 +80,8 @@ class GenerationRequest(BaseModel):
     aspect_ratio: str
     num_images: int = 1
     lora_urls: List[str] = []
-    use_default_lora: bool = True  # New flag to control default LoRA usage
+    use_default_lora: bool = True
+    enhance_prompt: bool = True# New flag to control default LoRA usage
 
     @field_validator('aspect_ratio')
     def validate_aspect_ratio(cls, v: str) -> str:
@@ -126,6 +139,25 @@ async def generate_images(request: GenerationRequest):
     try:
         start_time = time.time()
         pipe = app.state.pipe
+
+        if request.enhance_prompt:
+            try:
+                original_prompt=request.prompt
+                enhanced_prompt=enhance_prompt(original_prompt)
+                logger.info(f"Enhanced prompt from: '{original_prompt}' to: '{enhanced_prompt}'")
+                processed_prompt = enhanced_prompt
+            except Exception as e:
+                logger.error(f"Failed to enhance prompt: {str(e)}. Using original prompt.")
+                processed_prompt = request.prompt
+
+        else:
+            processed_prompt = request.prompt
+            logger.info("Using original prompt without enhancement")
+
+            
+                
+                
+                
 
         # Generate unique request ID to use for adapter names
         request_id = str(uuid.uuid4())[:8]
@@ -217,6 +249,11 @@ async def generate_images(request: GenerationRequest):
 
         return {
             "status": "success",
+            "prompt":{
+                "original": request.prompt,
+                "enhanced": processed_prompt if request.enhance_prompt else None,
+                "enhancement_used": request.enhance_prompt
+            },
             "lora_status": {
                 "loaded_loras": loaded_adapters,
                 "default_lora_used": request.use_default_lora,
